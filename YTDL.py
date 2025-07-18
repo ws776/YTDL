@@ -7,7 +7,7 @@ import time
 app = Flask(__name__)
 
 DOWNLOAD_FOLDER = "/tmp/downloads"
-SECRET_KEY = "124816"  # 固定鍵（例：年月日曜日→hex化）
+SECRET_KEY = os.getenv("SECRET_KEY", "124816")
 
 # 一時ディレクトリ作成（Renderでは重要）
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
@@ -49,9 +49,11 @@ def download():
         ]
 
     try:
-        subprocess.run(cmd, check=True)
-    except subprocess.CalledProcessError:
-        return jsonify({"error": "ダウンロード失敗"}), 500
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as e:
+        print("yt-dlp error output:", e.stderr)  # ログ出力（Renderのログで確認）
+        return jsonify({"error": "ダウンロード失敗", "detail": e.stderr}), 500
+
 
     files = [f for f in os.listdir(DOWNLOAD_FOLDER) if f.endswith(f".{ext}")]
     matched_files = [f for f in files if f"[{unique_id}]" in f]
