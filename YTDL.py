@@ -18,8 +18,7 @@ def is_authorized(key: str) -> bool:
 @app.route('/download', methods=['POST'])
 def download():
     data = request.get_json()
-    raw_url = data.get("url")
-    url = urllib.parse.unquote(raw_url) if raw_url else None  # ← デコード追加
+    url = data.get("url")
     ext = data.get("ext", "mp4")
     key = data.get("key")
 
@@ -44,7 +43,6 @@ def download():
     else:
         cmd = [
             "yt-dlp",
-            "-f", "best",
             "-o", output_path,
             url
         ]
