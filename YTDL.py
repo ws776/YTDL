@@ -19,7 +19,7 @@ def is_authorized(key: str) -> bool:
 def download():
     data = request.get_json()
     url = data.get("url")
-    print("受信URL:", url)  # ← ここで必ずログを出す
+    print("受信URL:", url)  # URLログ出力
     ext = data.get("ext", "mp4")
     key = data.get("key")
 
@@ -36,6 +36,7 @@ def download():
     if ext == "mp3":
         cmd = [
             "yt-dlp",
+            "--geo-bypass-country", "JP",
             "-x",
             "--audio-format", "mp3",
             "-o", output_path,
@@ -44,16 +45,24 @@ def download():
     else:
         cmd = [
             "yt-dlp",
+            "--geo-bypass-country", "JP",
             "-o", output_path,
             url
         ]
 
+    # 例：日本のプロキシを使いたい場合（オプション）
+    # cmd.insert(1, "--proxy")
+    # cmd.insert(2, "http://日本のプロキシIP:ポート")
+
+    print("実行コマンド:", " ".join(cmd))  # 実際のコマンドをログ出力
+
     try:
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        print("yt-dlp stdout:", result.stdout)
+        print("yt-dlp stderr:", result.stderr)
     except subprocess.CalledProcessError as e:
-        print("yt-dlp error output:", e.stderr)  # ログ出力（Renderのログで確認）
+        print("yt-dlp error output:", e.stderr)
         return jsonify({"error": "ダウンロード失敗", "detail": e.stderr}), 500
-
 
     files = [f for f in os.listdir(DOWNLOAD_FOLDER) if f.endswith(f".{ext}")]
     matched_files = [f for f in files if f"[{unique_id}]" in f]
