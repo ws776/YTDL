@@ -19,6 +19,7 @@ def is_authorized(key: str) -> bool:
 def download():
     data = request.get_json()
     url = data.get("url")
+    print("受信URL:", url)  # ← ここで必ずログを出す
     ext = data.get("ext", "mp4")
     key = data.get("key")
 
