@@ -18,7 +18,8 @@ def is_authorized(key: str) -> bool:
 @app.route('/download', methods=['POST'])
 def download():
     data = request.get_json()
-    url = data.get("url")
+    raw_url = data.get("url")
+    url = urllib.parse.unquote(raw_url) if raw_url else None  # ← デコード追加
     ext = data.get("ext", "mp4")
     key = data.get("key")
 
